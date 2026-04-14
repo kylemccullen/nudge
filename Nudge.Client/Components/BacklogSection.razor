@@ -1,0 +1,46 @@
+﻿@using Nudge.Client.Enums
+@using Nudge.Shared.DTOs
+
+@if (Tasks.Any())
+{
+    <div class="mb-2 border border-gray-800 rounded-lg overflow-hidden">
+        <button class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-800 transition-colors"
+                @onclick="() => ExpandedChanged.InvokeAsync(!Expanded)">
+            <span class="text-sm font-medium text-gray-500">Backlog</span>
+            <span class="flex items-center gap-2 text-xs text-gray-500">
+                <span>@Tasks.Count task@(Tasks.Count == 1 ? "" : "s")</span>
+                <span>@(Expanded ? "▲" : "▼")</span>
+            </span>
+        </button>
+
+        @if (Expanded)
+        {
+            <SortableList Class="border-t border-gray-800 divide-y divide-gray-800" OnMoved="OnTaskMoved">
+                @foreach (var task in Tasks)
+                {
+                    <TaskItem @key="task.Id" Variant="TaskItemVariant.Backlog" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
+                }
+            </SortableList>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public required List<TaskItemDto> Tasks { get; set; }
+
+    [Parameter]
+    public EventCallback OnTaskUpdated { get; set; }
+
+    [Parameter]
+    public bool Expanded { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ExpandedChanged { get; set; }
+
+    [Parameter]
+    public Guid? HighlightTaskId { get; set; }
+
+    [Parameter]
+    public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnTaskMoved { get; set; }
+}

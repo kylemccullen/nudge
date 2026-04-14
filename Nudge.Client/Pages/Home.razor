@@ -1,0 +1,182 @@
+@page "/"
+@attribute [Authorize]
+
+@using Nudge.Client.Components
+@using Nudge.Shared.DTOs
+@using Nudge.Shared.Data.Domain
+@using Nudge.Shared.Enums
+@using Nudge.Shared.Extensions
+@using System.Net.Http.Json
+
+@inject IHttpClientFactory ClientFactory
+@inject Nudge.Client.Services.AppState AppState
+@implements IDisposable
+
+@if (AppState.ShowAddTaskForm)
+{
+    <AddTask OnTaskAdded="OnTaskAdded" />
+}
+
+<div class="relative mb-3">
+    <input type="text" @bind="_searchTerm" @bind:event="oninput"
+           placeholder="Search tasks..."
+           class="w-full text-sm bg-gray-800 text-gray-200 border border-gray-600 rounded px-3 py-1 placeholder-gray-500 focus:outline-none focus:border-gray-400" />
+    @if (!string.IsNullOrEmpty(_searchTerm))
+    {
+        <button @onclick="() => _searchTerm = string.Empty"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors">
+            ✕
+        </button>
+    }
+</div>
+
+@if (schedule is null)
+{
+    <p class="text-center py-12 text-sm text-gray-500">Loading...</p>
+}
+else if (!schedule.TodayTasks.Any() && !schedule.FutureDayGroups.Any()
+         && !schedule.DoneTasks.Any())
+{
+    <p class="text-center py-12 text-sm text-gray-500">No tasks yet. Add one above.</p>
+}
+else
+{
+    var isSearching = !string.IsNullOrWhiteSpace(_searchTerm);
+    var filteredGroups = schedule.FutureDayGroups
+        .Select(g => new ScheduledDay(g.Day, Filter(g.Tasks)))
+        .Where(g => g.Tasks.Any())
+        .ToList();
+    var filteredBacklog = Filter(schedule.BacklogTasks);
+
+    <TodaySection
+        Tasks="schedule.TodayTasks"
+        FilteredTasks="Filter(schedule.TodayTasks)"
+        CompletedCapacity="schedule.TodayCompletedCapacity"
+        TotalCapacity="schedule.TodayTotalCapacity"
+        OnTaskUpdated="LoadTasks"
+        OnAssignMore="AssignMoreTasksAsync"
+        OnTaskMoved="HandleTaskMoved"
+        HighlightTaskId="@_highlightTaskId" />
+
+    @if (filteredGroups.Any())
+    {
+        <div class="mb-4">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Upcoming</h2>
+                <button class="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                        @onclick="ToggleAll">
+                    @(_allExpanded ? "Collapse All" : "Expand All")
+                </button>
+            </div>
+            @foreach (var dayGroup in filteredGroups)
+            {
+                <FutureDayGroup Group="dayGroup"
+                                Expanded="@(isSearching || (_dayGroupExpanded.TryGetValue(dayGroup.Day, out var exp) ? exp : false))"
+                                ExpandedChanged="@(v => _dayGroupExpanded[dayGroup.Day] = v)"
+                                OnTaskUpdated="LoadTasks"
+                                OnTaskMoved="HandleTaskMoved"
+                                HighlightTaskId="@_highlightTaskId" />
+            }
+        </div>
+    }
+
+    <BacklogSection Tasks="filteredBacklog"
+                    Expanded="@(_backlogExpanded || (isSearching && filteredBacklog.Any()))"
+                    ExpandedChanged="@(v => _backlogExpanded = v)"
+                    OnTaskUpdated="LoadTasks"
+                    OnTaskMoved="HandleTaskMoved"
+                    HighlightTaskId="@_highlightTaskId" />
+
+    <DoneSection Tasks="Filter(schedule.DoneTasks)" OnTaskUpdated="LoadTasks" />
+}
+
+@code {
+    private ScheduledTasksResponse? schedule = null;
+
+    private string _searchTerm = "";
+
+    private List<TaskItemDto> Filter(List<TaskItemDto> tasks) =>
+        string.IsNullOrWhiteSpace(_searchTerm)
+            ? tasks
+            : tasks.Where(t => t.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private Dictionary<DateOnly, bool> _dayGroupExpanded = new();
+    private bool _backlogExpanded = false;
+    private bool _allExpanded = false;
+    private Guid? _highlightTaskId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.OnChange += StateHasChanged;
+        await LoadTasks();
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+    private async Task OnTaskAdded(Guid newTaskId)
+    {
+        _highlightTaskId = newTaskId;
+        await LoadTasks();
+
+        if (schedule != null)
+        {
+            foreach (var group in schedule.FutureDayGroups)
+                if (group.Tasks.Any(t => t.Id == newTaskId))
+                    _dayGroupExpanded[group.Day] = true;
+
+            if (schedule.BacklogTasks.Any(t => t.Id == newTaskId))
+                _backlogExpanded = true;
+        }
+
+        StateHasChanged();
+        _ = ClearHighlightAfterDelay();
+    }
+
+    private async Task ClearHighlightAfterDelay()
+    {
+        await Task.Delay(2500);
+        _highlightTaskId = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadTasks()
+    {
+        var client = ClientFactory.CreateClient("WebAPI");
+
+        schedule = await client.GetFromJsonAsync<ScheduledTasksResponse>("api/tasks");
+
+        foreach (var group in schedule!.FutureDayGroups)
+            if (!_dayGroupExpanded.ContainsKey(group.Day))
+                _dayGroupExpanded[group.Day] = _allExpanded;
+    }
+
+    private async Task HandleTaskMoved((string TaskId, string? PrevId, string? NextId) args)
+    {
+        var client = ClientFactory.CreateClient("WebAPI");
+        var request = new MoveTaskRequest(
+            args.PrevId != null ? Guid.Parse(args.PrevId) : null,
+            args.NextId != null ? Guid.Parse(args.NextId) : null
+        );
+        await client.PatchAsJsonAsync($"api/tasks/{args.TaskId}/move", request);
+        await LoadTasks();
+    }
+
+    private async Task AssignMoreTasksAsync(int extraPoints)
+    {
+        var client = ClientFactory.CreateClient("WebAPI");
+        await client.PostAsJsonAsync("api/day-capacity", new { ExtraPoints = extraPoints });
+        await LoadTasks();
+    }
+
+    private void ToggleAll()
+    {
+        _allExpanded = !_allExpanded;
+        if (schedule != null)
+            foreach (var group in schedule.FutureDayGroups)
+                _dayGroupExpanded[group.Day] = _allExpanded;
+        _backlogExpanded = _allExpanded;
+    }
+}

@@ -1,0 +1,44 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<ul id="@_id" class="@Class">
+    @ChildContent
+</ul>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnMoved { get; set; }
+
+    private readonly string _id = $"sl-{Guid.NewGuid():N}";
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<SortableList>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/sortable-interop.js");
+            _dotNetRef = DotNetObjectReference.Create(this);
+        }
+
+        if (_module != null && _dotNetRef != null)
+            await _module.InvokeVoidAsync("init", _id, _dotNetRef);
+    }
+
+    [JSInvokable]
+    public async Task OnTaskMoved(string taskId, string? prevId, string? nextId)
+    {
+        await OnMoved.InvokeAsync((taskId, prevId, nextId));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.InvokeVoidAsync("destroy", _id);
+            await _module.DisposeAsync();
+        }
+        _dotNetRef?.Dispose();
+    }
+}

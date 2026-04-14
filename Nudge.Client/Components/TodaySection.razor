@@ -1,0 +1,108 @@
+@using Nudge.Client.Enums
+@using Nudge.Shared.DTOs
+@using Nudge.Shared.Extensions
+
+<div class="mb-6">
+    <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold text-gray-200 uppercase tracking-wide">Today</h2>
+        <span class="text-xs text-gray-400">@CompletedCapacity / @AssignedCapacity / @TotalCapacity pts</span>
+    </div>
+
+    <div class="h-1.5 rounded-full bg-gray-700 mb-4 flex overflow-hidden">
+        @if (CompletedPercent > 0)
+        {
+            <div class="h-full bg-green-500 transition-all duration-300" style="width: @CompletedPercent%"></div>
+        }
+        @if (IncompletePercent > 0)
+        {
+            <div class="h-full bg-indigo-500 transition-all duration-300" style="width: @IncompletePercent%"></div>
+        }
+    </div>
+
+    @if (!Tasks.Any() && CompletedCapacity == 0)
+    {
+        <p class="text-sm text-gray-500 py-4">Nothing scheduled today.</p>
+    }
+    else if (!Tasks.Any())
+    {
+        <p class="text-sm text-green-400 py-2">All tasks complete.</p>
+
+        @if (_showAssignMore)
+        {
+            <div class="flex items-center gap-2 mt-3">
+                <span class="text-sm text-gray-400">Extra effort points:</span>
+                <input type="number" min="1" max="20"
+                       @bind="_extraPoints"
+                       class="w-16 text-sm bg-gray-800 text-gray-200 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:border-gray-400" />
+                <button @onclick="ConfirmAssignMore"
+                        class="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded transition-colors">
+                    Confirm
+                </button>
+                <button @onclick="() => _showAssignMore = false"
+                        class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        }
+        else
+        {
+            <button @onclick="() => _showAssignMore = true"
+                    class="mt-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+                + Assign more tasks for today
+            </button>
+        }
+    }
+    else
+    {
+        <SortableList Class="space-y-2" OnMoved="OnTaskMoved">
+            @foreach (var task in FilteredTasks)
+            {
+                <TaskItem @key="task.Id" Variant="TaskItemVariant.Today" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
+            }
+        </SortableList>
+    }
+</div>
+@code {
+    [Parameter]
+    public required List<TaskItemDto> Tasks { get; set; }
+
+    [Parameter]
+    public required List<TaskItemDto> FilteredTasks { get; set; }
+
+    [Parameter]
+    public int CompletedCapacity { get; set; }
+
+    [Parameter]
+    public int TotalCapacity { get; set; }
+
+    [Parameter]
+    public EventCallback OnTaskUpdated { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnAssignMore { get; set; }
+
+    [Parameter]
+    public Guid? HighlightTaskId { get; set; }
+
+    [Parameter]
+    public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnTaskMoved { get; set; }
+
+    private int AssignedCapacity => CompletedCapacity + Tasks.Sum(t => t.Effort.Cost());
+
+    private int CompletedPercent =>
+    TotalCapacity == 0 ? 0 : (int)Math.Round((double)CompletedCapacity / TotalCapacity * 100);
+
+    private int IncompletePercent =>
+        TotalCapacity == 0 ? 0 : (int)Math.Round((double)Tasks.Sum(t => t.Effort.Cost()) / TotalCapacity * 100);
+
+    private bool _showAssignMore = false;
+    private int _extraPoints = 2;
+
+    private async Task ConfirmAssignMore()
+    {
+        var points = _extraPoints;
+        _showAssignMore = false;
+        _extraPoints = 2;
+        await OnAssignMore.InvokeAsync(points);
+    }
+}

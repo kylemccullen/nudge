@@ -1,0 +1,36 @@
+﻿@using Nudge.Client.Enums
+@using Nudge.Shared.DTOs
+
+@if (Tasks.Any())
+{
+    <div class="mt-6 border-t border-gray-800 pt-4">
+        <button class="w-full flex items-center justify-between py-2 text-left"
+                @onclick="() => expanded = !expanded">
+            <span class="text-sm font-medium text-gray-500">Done</span>
+            <span class="flex items-center gap-2 text-xs text-gray-600">
+                <span>@Tasks.Count completed</span>
+                <span>@(expanded ? "▲" : "▼")</span>
+            </span>
+        </button>
+
+        @if (expanded)
+        {
+            <ul class="space-y-2 mt-2">
+                @foreach (var task in Tasks)
+                {
+                    <TaskItem Variant="TaskItemVariant.Done" Task="task" OnTaskUpdated="OnTaskUpdated" />
+                }
+            </ul>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public required List<TaskItemDto> Tasks { get; set; }
+
+    [Parameter]
+    public EventCallback OnTaskUpdated { get; set; }
+
+    private bool expanded = false;
+}

@@ -1,0 +1,99 @@
+﻿@using Nudge.Client.Enums
+@using Nudge.Shared.DTOs
+@using Nudge.Shared.Enums
+@using Nudge.Shared.Extensions
+
+@inject IHttpClientFactory ClientFactory
+
+<li @key="Task.Id" data-task-id="@Task.Id" class="@ItemClass @(Task.Id == HighlightTaskId ? "task-highlight" : "")" @ondblclick="() => showEditModal = true">
+    @if (ShowDragHandle)
+    {
+        <span class="drag-handle flex-shrink-0 cursor-grab text-gray-600 hover:text-gray-400 transition-colors select-none">⠿</span>
+    }
+    <div class="flex items-center gap-2 w-full sm:flex-1 sm:w-auto min-w-0">
+        @if (ShowCheckbox)
+        {
+            <input type="checkbox"
+                   checked="@Task.IsDone"
+                   @onchange="() => ToggleTask(Task.Id)"
+                   class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
+        }
+        <span class="flex-1 text-sm @TitleClass @(Task.IsDone ? "line-through text-gray-600" : "")">
+            @Task.Title
+        </span>
+    </div>
+
+    @if (Task.CompletedDate is not null)
+    {
+        <span class="text-sm text-gray-300">@Task.CompletedDate.TimeAgo()</span>
+    }
+    <span class="text-xs font-medium px-2 py-0.5 rounded @PriorityBadgeClass(Task.Priority)">@Task.Priority</span>
+    <span class="text-xs font-medium px-2 py-0.5 rounded bg-gray-700 text-gray-300">@Task.Effort</span>
+    @if (ShowSortOrder)
+    {
+        <span class="text-xs px-1.5 py-0.5 rounded bg-gray-900 text-gray-600 font-mono">#@Task.SortOrder</span>
+    }
+</li>
+
+@if (showEditModal)
+{
+    <EditTaskModal Task="Task" OnSaved="HandleSaved" OnCancelled="() => showEditModal = false" />
+}
+
+@code {
+    [Parameter]
+    public TaskItemVariant Variant { get; set; } = TaskItemVariant.Today;
+
+    [Parameter]
+    public required TaskItemDto Task { get; set; }
+
+    [Parameter]
+    public EventCallback OnTaskUpdated { get; set; }
+
+    [Parameter]
+    public Guid? HighlightTaskId { get; set; }
+
+    private bool showEditModal = false;
+
+    private async Task HandleSaved()
+    {
+        showEditModal = false;
+        await OnTaskUpdated.InvokeAsync();
+    }
+
+    private string ItemClass => Variant switch
+    {
+        TaskItemVariant.Today or TaskItemVariant.Done => "flex flex-wrap sm:flex-nowrap items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:border-gray-600 transition-colors",
+        _ => "relative flex flex-wrap sm:flex-nowrap items-center gap-3 px-4 py-3 bg-gray-900"
+    };
+
+    private string TitleClass => Variant switch
+    {
+        TaskItemVariant.Today or TaskItemVariant.Done => "text-gray-200",
+        _ => "text-gray-400"
+    };
+
+    private bool ShowCheckbox => Variant == TaskItemVariant.Today || Variant == TaskItemVariant.Done;
+
+    private bool ShowDragHandle => Variant != TaskItemVariant.Done;
+
+    private bool ShowSortOrder => Variant != TaskItemVariant.Done;
+
+    private async Task ToggleTask(Guid id)
+    {
+        var client = ClientFactory.CreateClient("WebAPI");
+
+        await client.PatchAsync($"api/tasks/{id}/toggle", null);
+
+        await OnTaskUpdated.InvokeAsync();
+    }
+
+    private static string PriorityBadgeClass(Priority p) => p switch
+    {
+        Priority.Critical => "bg-red-900 text-red-300",
+        Priority.High => "bg-orange-900 text-orange-300",
+        Priority.Medium => "bg-yellow-900 text-yellow-300",
+        Priority.Low => "bg-green-900 text-green-300",
+        _ => "bg-gray-700 text-gray-300"
+    };
+}

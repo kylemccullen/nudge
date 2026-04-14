@@ -1,0 +1,17 @@
+services:
+  nudge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - AppSettings__ConnectionStrings__NudgeDb=Data Source=/app/data/nudge.db
+      - AppSettings__Jwt__Key=${NUDGE_JWT_SECRET}
+    volumes:
+      - nudge_data:/app/data
+
+volumes:
+  nudge_data:

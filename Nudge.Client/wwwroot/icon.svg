@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark background matching app theme (gray-950) -->
+  <rect width="32" height="32" rx="7" fill="#0d0118"/>
+  <!-- Bell body (purple-600) -->
+  <path d="M16 4
+           C 11.5 4, 8.5 7.5, 8.5 12
+           L 8.5 19
+           L 6 21.5
+           L 26 21.5
+           L 23.5 19
+           L 23.5 12
+           C 23.5 7.5, 20.5 4, 16 4 Z"
+        fill="#9333ea"/>
+  <!-- Bell clapper -->
+  <circle cx="16" cy="25" r="2.5" fill="#9333ea"/>
+  <!-- Checkmark (white) -->
+  <path d="M11.5 13.5 L14.5 16.5 L20.5 10.5"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+</svg>

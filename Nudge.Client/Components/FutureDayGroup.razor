@@ -1,0 +1,50 @@
+﻿@using Nudge.Client.Enums
+@using Nudge.Shared.DTOs;
+
+<div class="mb-2 border border-gray-800 rounded-lg overflow-hidden">
+    <button class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-800 transition-colors"
+            @onclick="() => ExpandedChanged.InvokeAsync(!Expanded)">
+        <span class="text-sm font-medium text-gray-300">@DayLabel(Group.Day)</span>
+        <span class="flex items-center gap-2 text-xs text-gray-500">
+            <span>@Group.Tasks.Count task@(Group.Tasks.Count == 1 ? "" : "s")</span>
+            <span>@(Expanded ? "▲" : "▼")</span>
+        </span>
+    </button>
+
+    @if (Expanded)
+    {
+        <SortableList Class="border-t border-gray-800 divide-y divide-gray-800" OnMoved="OnTaskMoved">
+            @foreach (var task in Group.Tasks)
+            {
+                <TaskItem @key="task.Id" Variant="TaskItemVariant.Scheduled" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
+            }
+        </SortableList>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public required ScheduledDay Group { get; set; }
+
+    [Parameter]
+    public EventCallback OnTaskUpdated { get; set; }
+
+    [Parameter]
+    public bool Expanded { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ExpandedChanged { get; set; }
+
+    [Parameter]
+    public Guid? HighlightTaskId { get; set; }
+
+    [Parameter]
+    public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnTaskMoved { get; set; }
+
+    private string DayLabel(DateOnly day)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var prefix = day == today.AddDays(1) ? "Tomorrow · " : "";
+        return $"{prefix}{day:ddd MMM d}";
+    }
+}

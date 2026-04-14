@@ -1,0 +1,121 @@
+@inject IHttpClientFactory ClientFactory
+
+@using Nudge.Shared.DTOs
+@using Nudge.Shared.Enums
+
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60" @onclick="() => OnCancelled.InvokeAsync()">
+    <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-xl flex flex-col gap-4 shadow-xl" @onclick:stopPropagation>
+        <h2 class="text-sm font-semibold text-gray-200">Edit Task</h2>
+
+        <div class="flex flex-col gap-3">
+            <TaskForm @bind-Title="title" @bind-Priority="priority" @bind-Effort="effort" />
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400 w-16">Sort Order</span>
+                <input type="number"
+                       @bind="sortOrder"
+                       class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-purple-600 transition-colors" />
+            </div>
+        </div>
+
+        @if (isConfirmingDelete)
+        {
+            <div class="flex items-center justify-end gap-2 pt-1">
+                <span class="text-sm text-gray-400 mr-auto">Delete this task?</span>
+                <button type="button"
+                        @onclick="() => isConfirmingDelete = false"
+                        disabled="@isDeleting"
+                        class="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    Cancel
+                </button>
+                <LoadingButton OnClick="ConfirmDelete"
+                               IsLoading="@isDeleting"
+                               LoadingText="Deleting..."
+                               Class="bg-red-600 hover:bg-red-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                    Confirm Delete
+                </LoadingButton>
+            </div>
+        }
+        else
+        {
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button"
+                        @onclick="() => OnCancelled.InvokeAsync()"
+                        disabled="@isLoading"
+                        class="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    Cancel
+                </button>
+                <button type="button"
+                        @onclick="() => isConfirmingDelete = true"
+                        disabled="@isLoading"
+                        class="px-4 py-2 text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    Delete
+                </button>
+                <LoadingButton OnClick="Save"
+                               IsLoading="@isLoading"
+                               LoadingText="Saving..."
+                               Class="bg-purple-600 hover:bg-purple-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                    Save
+                </LoadingButton>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required TaskItemDto Task { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancelled { get; set; }
+
+    private string title = "";
+    private Priority priority;
+    private Effort effort;
+    private int sortOrder;
+    private bool isLoading = false;
+    private bool isDeleting = false;
+    private bool isConfirmingDelete = false;
+
+    protected override void OnParametersSet()
+    {
+        title = Task.Title;
+        priority = Task.Priority;
+        effort = Task.Effort;
+        sortOrder = Task.SortOrder;
+    }
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(title)) return;
+
+        isLoading = true;
+        try
+        {
+            var client = ClientFactory.CreateClient("WebAPI");
+            await client.PutAsJsonAsync($"api/tasks/{Task.Id}", new UpdateTaskRequest(title, priority, effort, sortOrder));
+            await OnSaved.InvokeAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ConfirmDelete()
+    {
+        isDeleting = true;
+        try
+        {
+            var client = ClientFactory.CreateClient("WebAPI");
+            await client.DeleteAsync($"api/tasks/{Task.Id}");
+            await OnSaved.InvokeAsync();
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}

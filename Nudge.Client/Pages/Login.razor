@@ -1,0 +1,106 @@
+@page "/login"
+@attribute [AllowAnonymous]
+@layout AuthLayout
+
+@using Nudge.Shared.DTOs
+@using Nudge.Client.Services
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject IWebAssemblyHostEnvironment HostEnv
+
+<div class="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+    <div class="w-full max-w-sm">
+        <div class="flex items-center gap-2 justify-center mb-8">
+            <img src="icon.svg" class="h-6 w-6" alt="nudge icon" />
+            <div class="text-xl font-semibold text-gray-100">nudge</div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h1 class="text-lg font-semibold text-gray-100 mb-6">Sign in</h1>
+
+            @if (_error is not null)
+            {
+                <p class="text-sm text-red-400 mb-4">@_error</p>
+            }
+
+            <EditForm Model="_model" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-1">Email</label>
+                    <InputText @bind-Value="_model.Email" type="email"
+                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+                               placeholder="you@example.com" />
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-400 mb-1">Password</label>
+                    <InputText @bind-Value="_model.Password" type="password"
+                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+                               placeholder="••••••••" />
+                </div>
+                <button type="submit" disabled="@_loading"
+                        class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                    @(_loading ? "Signing in..." : "Sign in")
+                </button>
+            </EditForm>
+
+            @if (HostEnv.IsDevelopment())
+            {
+                <div class="mt-4 pt-4 border-t border-gray-800">
+                    <button @onclick="DevLogin" disabled="@_loading"
+                            class="w-full bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                        DEV — Sign in as test@example.com
+                    </button>
+                </div>
+            }
+
+            <p class="text-sm text-gray-500 text-center mt-4">
+                Don't have an account?
+                <a href="/register" class="text-indigo-400 hover:text-indigo-300">Register</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginFormModel _model = new();
+    private string? _error;
+    private bool _loading;
+
+    private async Task HandleLogin()
+    {
+        _loading = true;
+        _error = null;
+
+        var (success, error) = await AuthService.LoginAsync(new LoginRequest(_model.Email, _model.Password));
+
+        if (success)
+            Navigation.NavigateTo("/");
+        else
+            _error = error;
+
+        _loading = false;
+    }
+
+    private async Task DevLogin()
+    {
+        _loading = true;
+        _error = null;
+
+        var (success, error) = await AuthService.LoginAsync(new LoginRequest("test@example.com", "password"));
+
+        if (success)
+            Navigation.NavigateTo("/");
+        else
+            _error = error;
+
+        _loading = false;
+    }
+
+    private class LoginFormModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}

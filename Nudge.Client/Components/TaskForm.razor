@@ -1,0 +1,53 @@
+@using Nudge.Shared.Enums
+
+<input type="text"
+       value="@Title"
+       @oninput="e => TitleChanged.InvokeAsync(e.Value?.ToString() ?? string.Empty)"
+       placeholder="Task title..."
+       class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-colors w-full" />
+
+<div class="flex flex-wrap items-center gap-3">
+    <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-400 w-12">Priority</span>
+        <div class="flex rounded-md overflow-hidden border border-gray-700">
+            @foreach (var p in Enum.GetValues<Priority>())
+            {
+                <button type="button"
+                    class="px-3 py-1 text-xs font-medium transition-colors @(Priority == p ? PriorityActiveClass(p) : "bg-gray-800 text-gray-400 hover:bg-gray-700")"
+                    @onclick="() => PriorityChanged.InvokeAsync(p)">@p</button>
+            }
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-400 w-12">Effort</span>
+        <div class="flex rounded-md overflow-hidden border border-gray-700">
+            @foreach (var e in Enum.GetValues<Effort>())
+            {
+                <button type="button"
+                    class="px-3 py-1 text-xs font-medium transition-colors @(Effort == e ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700")"
+                    @onclick="() => EffortChanged.InvokeAsync(e)">@e</button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public EventCallback<string> TitleChanged { get; set; }
+
+    [Parameter] public Priority Priority { get; set; } = Priority.Medium;
+    [Parameter] public EventCallback<Priority> PriorityChanged { get; set; }
+
+    [Parameter] public Effort Effort { get; set; } = Effort.Medium;
+    [Parameter] public EventCallback<Effort> EffortChanged { get; set; }
+
+    private static string PriorityActiveClass(Priority p) => p switch
+    {
+        Priority.Critical => "bg-red-600 text-white",
+        Priority.High => "bg-orange-500 text-white",
+        Priority.Medium => "bg-yellow-500 text-gray-900",
+        Priority.Low => "bg-green-600 text-white",
+        _ => "bg-indigo-600 text-white"
+    };
+}

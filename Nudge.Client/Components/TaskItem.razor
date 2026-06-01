@@ -12,7 +12,7 @@
             <input type="checkbox"
                    checked="@Task.IsDone"
                    @onchange="() => ToggleTask(Task.Id)"
-                   class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
+                   class="w-4 h-4 accent-indigo-500 cursor-pointer flex-shrink-0" />
         }
         <span class="flex-1 text-sm @TitleClass @(Task.IsDone ? "line-through text-gray-600" : "")">
             @Task.Title

@@ -8,7 +8,7 @@
         <h2 class="text-sm font-semibold text-gray-200">Edit Task</h2>
 
         <div class="flex flex-col gap-3">
-            <TaskForm @bind-Title="title" @bind-Priority="priority" @bind-Effort="effort" />
+            <TaskForm @bind-Title="title" @bind-Priority="priority" @bind-Effort="effort" @bind-DueDate="dueDate" />
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
@@ -41,6 +41,7 @@
     private string title = "";
     private Priority priority;
     private Effort effort;
+    private DateOnly? dueDate;
     private bool isLoading = false;
 
     protected override void OnParametersSet()
@@ -48,6 +49,7 @@
         title = Task.Title;
         priority = Task.Priority;
         effort = Task.Effort;
+        dueDate = Task.DueDate;
     }
 
     private async Task Save()
@@ -58,7 +60,7 @@
         try
         {
             var client = ClientFactory.CreateClient("WebAPI");
-            await client.PutAsJsonAsync($"api/tasks/{Task.Id}", new UpdateTaskRequest(title, priority, effort));
+            await client.PutAsJsonAsync($"api/tasks/{Task.Id}", new UpdateTaskRequest(title, priority, effort, dueDate));
             await OnSaved.InvokeAsync();
         }
         finally

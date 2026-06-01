@@ -30,6 +30,27 @@
             }
         </div>
     </div>
+
+    <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-400 w-12">Due</span>
+        <div class="flex items-center gap-2">
+            <div class="flex rounded-md overflow-hidden border border-gray-700">
+                <button type="button"
+                        class="px-3 py-1 text-xs font-medium transition-colors @(DueDate == null ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700")"
+                        @onclick="() => DueDateChanged.InvokeAsync(null)">None</button>
+                <button type="button"
+                        class="px-3 py-1 text-xs font-medium transition-colors @(DueDate == _today ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700")"
+                        @onclick="() => DueDateChanged.InvokeAsync(_today)">Today</button>
+                <button type="button"
+                        class="px-3 py-1 text-xs font-medium transition-colors @(DueDate == _tomorrow ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700")"
+                        @onclick="() => DueDateChanged.InvokeAsync(_tomorrow)">Tomorrow</button>
+            </div>
+            <input type="date"
+                   value="@(DueDate.HasValue ? DueDate.Value.ToString("yyyy-MM-dd") : "")"
+                   @onchange="OnDateInputChange"
+                   class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-purple-600" />
+        </div>
+    </div>
 </div>
 
 @code {
@@ -41,6 +62,20 @@
 
     [Parameter] public Effort Effort { get; set; } = Effort.Medium;
     [Parameter] public EventCallback<Effort> EffortChanged { get; set; }
+
+    [Parameter] public DateOnly? DueDate { get; set; }
+    [Parameter] public EventCallback<DateOnly?> DueDateChanged { get; set; }
+
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly _tomorrow = DateOnly.FromDateTime(DateTime.Now.AddDays(1));
+
+    private async Task OnDateInputChange(ChangeEventArgs e)
+    {
+        if (DateOnly.TryParse(e.Value?.ToString(), out var date))
+            await DueDateChanged.InvokeAsync(date);
+        else
+            await DueDateChanged.InvokeAsync(null);
+    }
 
     private static string PriorityActiveClass(Priority p) => p switch
     {

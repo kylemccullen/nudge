@@ -24,6 +24,7 @@ public class TaskService(NudgeDbContext context) : ITasksService
             Title = request.Title,
             Priority = request.Priority,
             Effort = request.Effort,
+            DueDate = request.DueDate,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             UserId = userId
@@ -60,6 +61,7 @@ public class TaskService(NudgeDbContext context) : ITasksService
             task.Title = request.Title;
             task.Priority = request.Priority;
             task.Effort = request.Effort;
+            task.DueDate = request.DueDate;
             task.UpdatedAt = DateTime.UtcNow;
 
             await context.SaveChangesAsync();

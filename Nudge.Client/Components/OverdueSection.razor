@@ -1,0 +1,26 @@
+@using Nudge.Client.Enums
+@using Nudge.Shared.DTOs
+
+<div class="mb-6">
+    <div class="flex items-center gap-2 mb-2">
+        <h2 class="text-sm font-semibold text-red-400 uppercase tracking-wide">Overdue</h2>
+        <span class="text-xs bg-red-900 text-red-300 px-2 py-0.5 rounded-full font-medium">@Tasks.Count</span>
+    </div>
+    <ul class="space-y-2">
+        @foreach (var task in Tasks)
+        {
+            <TaskItem @key="task.Id" Variant="TaskItemVariant.Today" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter]
+    public required List<TaskItemDto> Tasks { get; set; }
+
+    [Parameter]
+    public EventCallback OnTaskUpdated { get; set; }
+
+    [Parameter]
+    public Guid? HighlightTaskId { get; set; }
+}

@@ -14,5 +14,7 @@ public class TaskItem : BaseEntity
 
     public DateTime? CompletedDate { get; set; }
 
+    public DateOnly? DueDate { get; set; }
+
     public Guid UserId { get; set; }
 }

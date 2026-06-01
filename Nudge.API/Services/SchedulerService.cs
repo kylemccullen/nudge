@@ -1,4 +1,4 @@
-﻿using Nudge.API.Interfaces;
+using Nudge.API.Interfaces;
 using Nudge.Shared.Data.Domain;
 using Nudge.Shared.DTOs;
 using Nudge.Shared.Extensions;
@@ -20,7 +20,7 @@ public class SchedulerService : ISchedulerService
         d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday ? 6 : 4;
 
     private static TaskItemDto ToDto(TaskItem t) =>
-        new(t.Id, t.Title, t.IsDone, t.Priority, t.Effort, t.CompletedDate);
+        new(t.Id, t.Title, t.IsDone, t.Priority, t.Effort, t.CompletedDate, t.DueDate);
 
     private static List<SchedulingDay> CreateScheduleDays(DateOnly today, int todayCompletedCapacity, int extraCapacity)
     {
@@ -57,57 +57,81 @@ public class SchedulerService : ISchedulerService
             .Sum(t => t.Effort.Cost());
 
         var scheduleDays = CreateScheduleDays(today, todayCompletedCapacity, extraCapacity);
+        var todayCapacityLimit = DayCapacity(today) + extraCapacity;
 
-        var incompleteTasks = tasks
-            .Where(t => !t.IsDone)
+        var incompleteTasks = tasks.Where(t => !t.IsDone).ToList();
+
+        // Tasks with a past due date surface in the Overdue section, not the schedule
+        var overdueTasks = incompleteTasks
+            .Where(t => t.DueDate.HasValue && t.DueDate.Value < today)
+            .OrderBy(t => t.DueDate)
+            .ThenBy(t => t.Priority)
+            .ToList();
+
+        // Tasks pinned to a specific future (or today) date
+        var dueDateTasks = incompleteTasks
+            .Where(t => t.DueDate.HasValue && t.DueDate.Value >= today)
+            .OrderBy(t => t.DueDate)
+            .ThenBy(t => t.Priority)
+            .ToList();
+
+        // Undated tasks fill remaining capacity
+        var undatedTasks = incompleteTasks
+            .Where(t => !t.DueDate.HasValue)
             .OrderBy(t => t.Priority)
             .ThenBy(t => t.CreatedAt)
             .ToList();
 
-        for (var i = 0; i < incompleteTasks.Count; i++)
+        // Pin due-date tasks to their specific day (allow overflow)
+        foreach (var task in dueDateTasks)
         {
-            var task = incompleteTasks[i];
-            var cost = task.Effort.Cost();
-
-            foreach (var scheduleDay in scheduleDays)
+            var dueDate = task.DueDate!.Value;
+            var scheduleDay = scheduleDays.FirstOrDefault(sd => sd.Date == dueDate);
+            if (scheduleDay == null)
             {
-                if (cost > scheduleDay.RemainingCapacity)
-                {
-                    continue;
-                }
+                scheduleDay = new SchedulingDay { Date = dueDate, RemainingCapacity = DayCapacity(dueDate) };
+                scheduleDays.Add(scheduleDay);
+            }
+            scheduleDay.Tasks.Add(task);
+            scheduleDay.RemainingCapacity -= task.Effort.Cost();
+        }
 
+        // Fill remaining capacity greedily with undated tasks
+        foreach (var task in undatedTasks)
+        {
+            var cost = task.Effort.Cost();
+            foreach (var scheduleDay in scheduleDays.OrderBy(sd => sd.Date))
+            {
+                if (cost > scheduleDay.RemainingCapacity) continue;
                 scheduleDay.Tasks.Add(task);
                 scheduleDay.RemainingCapacity -= cost;
                 break;
             }
         }
 
-        var todayTasks = scheduleDays
-            .First()
-            .Tasks
-            .Select(ToDto)
-            .ToList();
+        var allScheduledTasks = scheduleDays.SelectMany(sd => sd.Tasks).ToHashSet();
+
+        var todayTasks = scheduleDays.First(sd => sd.Date == today).Tasks.Select(ToDto).ToList();
         var futureDayGroups = scheduleDays
-            .Skip(1)
-            .Where(sd => sd.Tasks.Count != 0)
+            .Where(sd => sd.Date > today && sd.Tasks.Count > 0)
+            .OrderBy(sd => sd.Date)
             .Select(sd => new ScheduledDay(sd.Date, [.. sd.Tasks.Select(ToDto)]))
             .ToList();
-        var backlogTasks = incompleteTasks
-            .Except(scheduleDays.SelectMany(sd => sd.Tasks))
+        var backlogTasks = undatedTasks
+            .Where(t => !allScheduledTasks.Contains(t))
             .Select(ToDto)
             .ToList();
-        var doneTasks = tasks
-            .Where(t => t.IsDone)
-            .Select(ToDto)
-            .ToList();
+        var doneTasks = tasks.Where(t => t.IsDone).Select(ToDto).ToList();
+        var overdueDtos = overdueTasks.Select(ToDto).ToList();
 
         return new ScheduledTasksResponse(
             todayTasks,
             futureDayGroups,
             backlogTasks,
             doneTasks,
+            overdueDtos,
             todayCompletedCapacity,
-            DayCapacity(today) + extraCapacity
+            todayCapacityLimit
         );
     }
 }

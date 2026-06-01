@@ -8,7 +8,7 @@
         <h2 class="text-sm font-semibold text-gray-200">Add Task</h2>
 
         <div class="flex flex-col gap-3">
-            <TaskForm @bind-Title="title" @bind-Priority="priority" @bind-Effort="effort" />
+            <TaskForm @bind-Title="title" @bind-Priority="priority" @bind-Effort="effort" @bind-DueDate="dueDate" />
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
@@ -38,6 +38,7 @@
     private string title = "";
     private Priority priority = Priority.Medium;
     private Effort effort = Effort.Medium;
+    private DateOnly? dueDate = null;
     private bool isLoading = false;
 
     private async Task Add()
@@ -48,7 +49,7 @@
         try
         {
             var client = ClientFactory.CreateClient("WebAPI");
-            var response = await client.PostAsJsonAsync("api/tasks", new CreateTaskRequest(title, priority, effort));
+            var response = await client.PostAsJsonAsync("api/tasks", new CreateTaskRequest(title, priority, effort, dueDate));
             var newTask = await response.Content.ReadFromJsonAsync<Nudge.Shared.Data.Domain.TaskItem>();
             await OnTaskAdded.InvokeAsync(newTask!.Id);
         }

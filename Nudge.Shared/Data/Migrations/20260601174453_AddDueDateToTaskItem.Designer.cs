@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nudge.Shared.Data;
 
@@ -10,9 +11,11 @@ using Nudge.Shared.Data;
 namespace Nudge.Shared.Data.Migrations
 {
     [DbContext(typeof(NudgeDbContext))]
-    partial class NudgeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601174453_AddDueDateToTaskItem")]
+    partial class AddDueDateToTaskItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.25");

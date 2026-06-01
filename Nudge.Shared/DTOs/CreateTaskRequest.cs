@@ -5,5 +5,6 @@ namespace Nudge.Shared.DTOs;
 public record CreateTaskRequest(
     string Title,
     Priority Priority,
-    Effort Effort
+    Effort Effort,
+    DateOnly? DueDate
 );

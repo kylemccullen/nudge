@@ -23,6 +23,10 @@
     {
         <span class="text-sm text-gray-300">@Task.CompletedDate.TimeAgo()</span>
     }
+    @if (Task.DueDate.HasValue)
+    {
+        <span class="text-xs font-medium px-2 py-0.5 rounded @DueDateBadgeClass">@Task.DueDate.Value.ToString("MMM d")</span>
+    }
     <span class="text-xs font-medium px-2 py-0.5 rounded @PriorityBadgeClass(Task.Priority)">@Task.Priority</span>
     <span class="text-xs font-medium px-2 py-0.5 rounded bg-gray-700 text-gray-300">@Task.Effort</span>
 
@@ -154,6 +158,11 @@
 
         await OnTaskUpdated.InvokeAsync();
     }
+
+    private string DueDateBadgeClass =>
+        Task.DueDate.HasValue && Task.DueDate.Value < DateOnly.FromDateTime(DateTime.Now) && !Task.IsDone
+            ? "bg-red-900 text-red-300"
+            : "bg-blue-900 text-blue-300";
 
     private static string PriorityBadgeClass(Priority p) => p switch
     {

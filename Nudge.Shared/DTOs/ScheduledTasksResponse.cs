@@ -5,6 +5,7 @@ public record ScheduledTasksResponse(
     List<ScheduledDay> FutureDayGroups,
     List<TaskItemDto> BacklogTasks,
     List<TaskItemDto> DoneTasks,
+    List<TaskItemDto> OverdueTasks,
     int TodayCompletedCapacity,
     int TodayTotalCapacity
 );

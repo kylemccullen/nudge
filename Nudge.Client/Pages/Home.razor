@@ -34,7 +34,7 @@
     <p class="text-center py-12 text-sm text-gray-500">Loading...</p>
 }
 else if (!schedule.TodayTasks.Any() && !schedule.FutureDayGroups.Any()
-         && !schedule.DoneTasks.Any())
+         && !schedule.DoneTasks.Any() && !schedule.OverdueTasks.Any() && !schedule.BacklogTasks.Any())
 {
     <p class="text-center py-12 text-sm text-gray-500">No tasks yet.</p>
 }
@@ -46,6 +46,11 @@ else
         .Where(g => g.Tasks.Any())
         .ToList();
     var filteredBacklog = Filter(schedule.BacklogTasks);
+
+    @if (schedule.OverdueTasks.Any())
+    {
+        <OverdueSection Tasks="Filter(schedule.OverdueTasks)" OnTaskUpdated="LoadTasks" HighlightTaskId="@_highlightTaskId" />
+    }
 
     <TodaySection
         Tasks="schedule.TodayTasks"

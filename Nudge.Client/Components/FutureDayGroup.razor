@@ -13,12 +13,12 @@
 
     @if (Expanded)
     {
-        <SortableList Class="border-t border-gray-800 divide-y divide-gray-800" OnMoved="OnTaskMoved">
+        <ul class="border-t border-gray-800 divide-y divide-gray-800">
             @foreach (var task in Group.Tasks)
             {
                 <TaskItem @key="task.Id" Variant="TaskItemVariant.Scheduled" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
             }
-        </SortableList>
+        </ul>
     }
 </div>
 
@@ -37,9 +37,6 @@
 
     [Parameter]
     public Guid? HighlightTaskId { get; set; }
-
-    [Parameter]
-    public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnTaskMoved { get; set; }
 
     private string DayLabel(DateOnly day)
     {

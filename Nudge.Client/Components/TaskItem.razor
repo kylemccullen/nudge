@@ -6,10 +6,6 @@
 @inject IHttpClientFactory ClientFactory
 
 <li @key="Task.Id" data-task-id="@Task.Id" class="@ItemClass @(Task.Id == HighlightTaskId ? "task-highlight" : "")" @ondblclick="() => showEditModal = true">
-    @if (ShowDragHandle)
-    {
-        <span class="drag-handle flex-shrink-0 cursor-grab text-gray-600 hover:text-gray-400 transition-colors select-none">⠿</span>
-    }
     <div class="flex items-center gap-2 w-full sm:flex-1 sm:w-auto min-w-0">
         @if (ShowCheckbox)
         {
@@ -29,10 +25,6 @@
     }
     <span class="text-xs font-medium px-2 py-0.5 rounded @PriorityBadgeClass(Task.Priority)">@Task.Priority</span>
     <span class="text-xs font-medium px-2 py-0.5 rounded bg-gray-700 text-gray-300">@Task.Effort</span>
-    @if (ShowSortOrder)
-    {
-        <span class="text-xs px-1.5 py-0.5 rounded bg-gray-900 text-gray-600 font-mono">#@Task.SortOrder</span>
-    }
 </li>
 
 @if (showEditModal)
@@ -74,10 +66,6 @@
     };
 
     private bool ShowCheckbox => Variant == TaskItemVariant.Today || Variant == TaskItemVariant.Done;
-
-    private bool ShowDragHandle => Variant != TaskItemVariant.Done;
-
-    private bool ShowSortOrder => Variant != TaskItemVariant.Done;
 
     private async Task ToggleTask(Guid id)
     {

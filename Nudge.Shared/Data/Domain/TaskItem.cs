@@ -14,7 +14,5 @@ public class TaskItem : BaseEntity
 
     public DateTime? CompletedDate { get; set; }
 
-    public int SortOrder { get; set; }
-
     public Guid UserId { get; set; }
 }

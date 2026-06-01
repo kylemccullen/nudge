@@ -55,7 +55,6 @@ else
         TotalCapacity="schedule.TodayTotalCapacity"
         OnTaskUpdated="LoadTasks"
         OnAssignMore="AssignMoreTasksAsync"
-        OnTaskMoved="HandleTaskMoved"
         HighlightTaskId="@_highlightTaskId" />
 
     @if (filteredGroups.Any())
@@ -74,7 +73,6 @@ else
                                 Expanded="@(isSearching || (_dayGroupExpanded.TryGetValue(dayGroup.Day, out var exp) ? exp : false))"
                                 ExpandedChanged="@(v => _dayGroupExpanded[dayGroup.Day] = v)"
                                 OnTaskUpdated="LoadTasks"
-                                OnTaskMoved="HandleTaskMoved"
                                 HighlightTaskId="@_highlightTaskId" />
             }
         </div>
@@ -84,7 +82,6 @@ else
                     Expanded="@(_backlogExpanded || (isSearching && filteredBacklog.Any()))"
                     ExpandedChanged="@(v => _backlogExpanded = v)"
                     OnTaskUpdated="LoadTasks"
-                    OnTaskMoved="HandleTaskMoved"
                     HighlightTaskId="@_highlightTaskId" />
 
     <DoneSection Tasks="Filter(schedule.DoneTasks)" OnTaskUpdated="LoadTasks" />
@@ -151,17 +148,6 @@ else
         foreach (var group in schedule!.FutureDayGroups)
             if (!_dayGroupExpanded.ContainsKey(group.Day))
                 _dayGroupExpanded[group.Day] = _allExpanded;
-    }
-
-    private async Task HandleTaskMoved((string TaskId, string? PrevId, string? NextId) args)
-    {
-        var client = ClientFactory.CreateClient("WebAPI");
-        var request = new MoveTaskRequest(
-            args.PrevId != null ? Guid.Parse(args.PrevId) : null,
-            args.NextId != null ? Guid.Parse(args.NextId) : null
-        );
-        await client.PatchAsJsonAsync($"api/tasks/{args.TaskId}/move", request);
-        await LoadTasks();
     }
 
     private async Task AssignMoreTasksAsync(int extraPoints)

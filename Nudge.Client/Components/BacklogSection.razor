@@ -15,12 +15,12 @@
 
         @if (Expanded)
         {
-            <SortableList Class="border-t border-gray-800 divide-y divide-gray-800" OnMoved="OnTaskMoved">
+            <ul class="border-t border-gray-800 divide-y divide-gray-800">
                 @foreach (var task in Tasks)
                 {
                     <TaskItem @key="task.Id" Variant="TaskItemVariant.Backlog" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
                 }
-            </SortableList>
+            </ul>
         }
     </div>
 }
@@ -41,6 +41,4 @@
     [Parameter]
     public Guid? HighlightTaskId { get; set; }
 
-    [Parameter]
-    public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnTaskMoved { get; set; }
 }

@@ -9,12 +9,6 @@
 
         <div class="flex flex-col gap-3">
             <TaskForm @bind-Title="title" @bind-Priority="priority" @bind-Effort="effort" />
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-400 w-16">Sort Order</span>
-                <input type="number"
-                       @bind="sortOrder"
-                       class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-purple-600 transition-colors" />
-            </div>
         </div>
 
         @if (isConfirmingDelete)
@@ -74,7 +68,6 @@
     private string title = "";
     private Priority priority;
     private Effort effort;
-    private int sortOrder;
     private bool isLoading = false;
     private bool isDeleting = false;
     private bool isConfirmingDelete = false;
@@ -84,7 +77,6 @@
         title = Task.Title;
         priority = Task.Priority;
         effort = Task.Effort;
-        sortOrder = Task.SortOrder;
     }
 
     private async Task Save()
@@ -95,7 +87,7 @@
         try
         {
             var client = ClientFactory.CreateClient("WebAPI");
-            await client.PutAsJsonAsync($"api/tasks/{Task.Id}", new UpdateTaskRequest(title, priority, effort, sortOrder));
+            await client.PutAsJsonAsync($"api/tasks/{Task.Id}", new UpdateTaskRequest(title, priority, effort));
             await OnSaved.InvokeAsync();
         }
         finally

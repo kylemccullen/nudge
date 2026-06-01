@@ -71,31 +71,6 @@ public class TasksController(ITasksService tasksService, ISchedulerService sched
         return NoContent();
     }
 
-    [HttpPatch("{id}/move")]
-    public async Task<ActionResult<TaskItem>> Move(Guid id, MoveTaskRequest request)
-    {
-        var userId = GetUserId();
-        var today = GetLocalToday();
-        var extraCapacity = await dayCapacityService.GetExtraCapacityAsync(userId, today);
-        var result = await tasksService.MoveAsync(id, request, userId, today, extraCapacity);
-
-        if (result is null)
-            return NotFound();
-
-        return Ok(result);
-    }
-
-    [HttpPost("reorder")]
-    public async Task<IActionResult> Reorder()
-    {
-        var userId = GetUserId();
-        var today = GetLocalToday();
-        var extraCapacity = await dayCapacityService.GetExtraCapacityAsync(userId, today);
-        await tasksService.ReorderAsync(userId, today, extraCapacity);
-
-        return NoContent();
-    }
-
     private Guid GetUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

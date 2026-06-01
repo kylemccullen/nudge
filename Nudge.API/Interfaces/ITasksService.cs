@@ -14,8 +14,4 @@ public interface ITasksService
     Task<TaskItem?> UpdateAsync(Guid id, UpdateTaskRequest request, Guid userId);
 
     Task<bool> DeleteAsync(Guid id, Guid userId);
-
-    Task<TaskItem?> MoveAsync(Guid id, MoveTaskRequest request, Guid userId, DateOnly today, int extraCapacity);
-
-    Task ReorderAsync(Guid userId, DateOnly today, int extraCapacity);
 }

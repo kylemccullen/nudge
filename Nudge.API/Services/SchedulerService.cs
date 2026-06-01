@@ -20,7 +20,7 @@ public class SchedulerService : ISchedulerService
         d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday ? 6 : 4;
 
     private static TaskItemDto ToDto(TaskItem t) =>
-        new(t.Id, t.Title, t.IsDone, t.Priority, t.Effort, t.CompletedDate, t.SortOrder);
+        new(t.Id, t.Title, t.IsDone, t.Priority, t.Effort, t.CompletedDate);
 
     private static List<SchedulingDay> CreateScheduleDays(DateOnly today, int todayCompletedCapacity, int extraCapacity)
     {
@@ -60,7 +60,8 @@ public class SchedulerService : ISchedulerService
 
         var incompleteTasks = tasks
             .Where(t => !t.IsDone)
-            .OrderBy(t => t.SortOrder)
+            .OrderBy(t => t.Priority)
+            .ThenBy(t => t.CreatedAt)
             .ToList();
 
         for (var i = 0; i < incompleteTasks.Count; i++)

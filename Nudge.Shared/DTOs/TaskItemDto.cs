@@ -8,6 +8,5 @@ public record TaskItemDto(
     bool IsDone,
     Priority Priority,
     Effort Effort,
-    DateTime? CompletedDate,
-    int SortOrder
+    DateTime? CompletedDate
 );

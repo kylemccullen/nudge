@@ -54,12 +54,12 @@
     }
     else
     {
-        <SortableList Class="space-y-2" OnMoved="OnTaskMoved">
+        <ul class="space-y-2">
             @foreach (var task in FilteredTasks)
             {
                 <TaskItem @key="task.Id" Variant="TaskItemVariant.Today" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
             }
-        </SortableList>
+        </ul>
     }
 </div>
 @code {
@@ -83,9 +83,6 @@
 
     [Parameter]
     public Guid? HighlightTaskId { get; set; }
-
-    [Parameter]
-    public EventCallback<(string TaskId, string? PrevId, string? NextId)> OnTaskMoved { get; set; }
 
     private int AssignedCapacity => CompletedCapacity + Tasks.Sum(t => t.Effort.Cost());
 

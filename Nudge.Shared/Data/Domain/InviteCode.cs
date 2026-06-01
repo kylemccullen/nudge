@@ -8,7 +8,5 @@ public class InviteCode : BaseEntity
 
     public Guid? UsedByUserId { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-
     public DateTime? UsedAt { get; set; }
 }

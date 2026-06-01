@@ -9,7 +9,7 @@
     <ul class="space-y-2">
         @foreach (var task in Tasks)
         {
-            <TaskItem @key="task.Id" Variant="TaskItemVariant.Today" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
+            <TaskItem @key="task.Id" Variant="TaskItemVariant.Overdue" Task="task" OnTaskUpdated="OnTaskUpdated" HighlightTaskId="HighlightTaskId" />
         }
     </ul>
 </div>

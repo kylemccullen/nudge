@@ -3,6 +3,7 @@
 public enum TaskItemVariant
 {
     Today,
+    Overdue,
     Scheduled,
     Backlog,
     Done

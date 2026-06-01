@@ -61,6 +61,17 @@
                 }
                 else
                 {
+                    <span>@Variant</span>
+                    @if (Variant != TaskItemVariant.Today)
+                    {
+                        <button type="button"
+                                @onclick="SetToToday"
+                                @onclick:stopPropagation
+                                disabled="@isSettingToday"
+                                class="block w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 disabled:opacity-50 transition-colors">
+                            @(isSettingToday ? "Saving…" : "Set to today")
+                        </button>
+                    }
                     <button type="button"
                             @onclick="OpenEdit"
                             @onclick:stopPropagation
@@ -101,6 +112,25 @@
     private bool showContextMenu = false;
     private bool isConfirmingDelete = false;
     private bool isDeleting = false;
+    private bool isSettingToday = false;
+
+    private async Task SetToToday()
+    {
+        isSettingToday = true;
+        try
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var request = new UpdateTaskRequest(Task.Title, Task.Priority, Task.Effort, today);
+            var client = ClientFactory.CreateClient("WebAPI");
+            await client.PutAsJsonAsync($"api/tasks/{Task.Id}", request);
+            showContextMenu = false;
+            await OnTaskUpdated.InvokeAsync();
+        }
+        finally
+        {
+            isSettingToday = false;
+        }
+    }
 
     private void OpenEdit()
     {
@@ -138,17 +168,17 @@
 
     private string ItemClass => Variant switch
     {
-        TaskItemVariant.Today or TaskItemVariant.Done => "relative flex flex-wrap sm:flex-nowrap items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:border-gray-600 transition-colors",
+        TaskItemVariant.Today or TaskItemVariant.Overdue or TaskItemVariant.Done => "relative flex flex-wrap sm:flex-nowrap items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:border-gray-600 transition-colors",
         _ => "relative flex flex-wrap sm:flex-nowrap items-center gap-3 px-4 py-3 bg-gray-900 last:rounded-b-lg"
     };
 
     private string TitleClass => Variant switch
     {
-        TaskItemVariant.Today or TaskItemVariant.Done => "text-gray-200",
+        TaskItemVariant.Today or TaskItemVariant.Overdue or TaskItemVariant.Done => "text-gray-200",
         _ => "text-gray-400"
     };
 
-    private bool ShowCheckbox => Variant == TaskItemVariant.Today || Variant == TaskItemVariant.Done;
+    private bool ShowCheckbox => Variant == TaskItemVariant.Today || Variant == TaskItemVariant.Overdue || Variant == TaskItemVariant.Done;
 
     private async Task ToggleTask(Guid id)
     {

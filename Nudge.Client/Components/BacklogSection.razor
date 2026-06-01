@@ -3,8 +3,8 @@
 
 @if (Tasks.Any())
 {
-    <div class="mb-2 border border-gray-800 rounded-lg overflow-hidden">
-        <button class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-800 transition-colors"
+    <div class="mb-2 border border-gray-800 rounded-lg">
+        <button class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-800 rounded-t-lg transition-colors"
                 @onclick="() => ExpandedChanged.InvokeAsync(!Expanded)">
             <span class="text-sm font-medium text-gray-500">Backlog</span>
             <span class="flex items-center gap-2 text-xs text-gray-500">

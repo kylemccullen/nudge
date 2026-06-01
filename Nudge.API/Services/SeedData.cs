@@ -11,7 +11,7 @@ public class SeedData
     {
         if (context.Users.Any()) return;
 
-        var user = new User { Email = "test@example.com", PasswordHash = "" };
+        var user = new User { Email = "test@example.com", PasswordHash = "", IsAdmin = true };
         user.PasswordHash = passwordHasher.HashPassword(user, "password");
 
         context.Users.Add(user);

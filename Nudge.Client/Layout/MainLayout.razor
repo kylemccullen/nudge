@@ -1,10 +1,8 @@
 @inherits LayoutComponentBase
-@inject Nudge.Client.Services.AppState AppState
 @inject Nudge.Client.Services.AuthService AuthService
 @inject Nudge.Client.Services.TimezoneService TimezoneService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
-@implements IDisposable
 
 <div class="min-h-screen bg-gray-950 flex flex-col">
     <header class="bg-gray-900 border-b border-gray-800">
@@ -14,10 +12,6 @@
                 <div class="text-xl font-semibold text-gray-100">nudge</div>
             </a>
             <div class="flex items-center gap-2">
-                <button class="bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                        @onclick="AppState.ToggleAddTaskForm">
-                    @(AppState.ShowAddTaskForm ? "Cancel" : "+ Add Task")
-                </button>
                 <AuthorizeView Roles="Admin">
                     <a href="/admin" class="text-gray-400 hover:text-gray-200 text-sm px-3 py-2 rounded-lg transition-colors">Admin</a>
                 </AuthorizeView>
@@ -31,26 +25,18 @@
     <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
         @Body
     </main>
-    <footer class="text-right p-4">
-        <span class="text-gray-600 text-xs">v@(typeof(MainLayout).Assembly.GetName().Version?.ToString(3))</span>
+    <footer class="py-2">
+        <div class="max-w-2xl mx-auto px-4 text-right">
+            <span class="text-gray-600 text-xs">v@(typeof(MainLayout).Assembly.GetName().Version?.ToString(3))</span>
+        </div>
     </footer>
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        AppState.OnChange += StateHasChanged;
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
             TimezoneService.TimeZoneId = await JS.InvokeAsync<string>("getBrowserTimezone");
-    }
-
-    public void Dispose()
-    {
-        AppState.OnChange -= StateHasChanged;
     }
 
     private async Task Logout()

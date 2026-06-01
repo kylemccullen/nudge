@@ -9,14 +9,13 @@
 @using System.Net.Http.Json
 
 @inject IHttpClientFactory ClientFactory
-@inject Nudge.Client.Services.AppState AppState
-@implements IDisposable
 
-@if (AppState.ShowAddTaskForm)
+@if (_showAddModal)
 {
-    <AddTask OnTaskAdded="OnTaskAdded" />
+    <AddTaskModal OnTaskAdded="OnTaskAdded" OnCancelled="() => _showAddModal = false" />
 }
 
+<div class="pb-24">
 <div class="relative mb-3">
     <input type="text" @bind="_searchTerm" @bind:event="oninput"
            placeholder="Search tasks..."
@@ -37,7 +36,7 @@
 else if (!schedule.TodayTasks.Any() && !schedule.FutureDayGroups.Any()
          && !schedule.DoneTasks.Any())
 {
-    <p class="text-center py-12 text-sm text-gray-500">No tasks yet. Add one above.</p>
+    <p class="text-center py-12 text-sm text-gray-500">No tasks yet.</p>
 }
 else
 {
@@ -87,8 +86,20 @@ else
     <DoneSection Tasks="Filter(schedule.DoneTasks)" OnTaskUpdated="LoadTasks" />
 }
 
+</div>
+
+<div class="fixed bottom-16 left-0 right-0 z-40 pointer-events-none">
+    <div class="max-w-2xl mx-auto px-4 flex justify-end">
+        <button @onclick="() => _showAddModal = true"
+                class="pointer-events-auto w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-3xl shadow-lg flex items-center justify-center leading-none">
+            +
+        </button>
+    </div>
+</div>
+
 @code {
     private ScheduledTasksResponse? schedule = null;
+    private bool _showAddModal = false;
 
     private string _searchTerm = "";
 
@@ -104,17 +115,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        AppState.OnChange += StateHasChanged;
         await LoadTasks();
-    }
-
-    public void Dispose()
-    {
-        AppState.OnChange -= StateHasChanged;
     }
 
     private async Task OnTaskAdded(Guid newTaskId)
     {
+        _showAddModal = false;
         _highlightTaskId = newTaskId;
         await LoadTasks();
 

@@ -46,10 +46,11 @@ else
         .Where(g => g.Tasks.Any())
         .ToList();
     var filteredBacklog = Filter(schedule.BacklogTasks);
+    var filteredOverdue = Filter(schedule.OverdueTasks);
 
-    @if (schedule.OverdueTasks.Any())
+    @if (filteredOverdue.Any())
     {
-        <OverdueSection Tasks="Filter(schedule.OverdueTasks)" OnTaskUpdated="LoadTasks" HighlightTaskId="@_highlightTaskId" />
+        <OverdueSection Tasks="filteredOverdue" OnTaskUpdated="LoadTasks" HighlightTaskId="@_highlightTaskId" />
     }
 
     <TodaySection

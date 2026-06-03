@@ -28,6 +28,7 @@ builder.Services.AddScoped<ITasksService, TaskService>();
 builder.Services.AddScoped<IDayCapacityService, DayCapacityService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IDataService, DataService>();
 builder.Services.AddScoped<PasswordHasher<User>>();
 
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>()!;

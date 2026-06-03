@@ -84,7 +84,7 @@ public class AuthService(
             issuer: appSettings.Value.Jwt.Issuer,
             audience: appSettings.Value.Jwt.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: DateTime.UtcNow.AddDays(90),
             signingCredentials: creds
         );
 

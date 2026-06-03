@@ -28,19 +28,19 @@
                 <div class="mb-4">
                     <label class="block text-sm text-gray-400 mb-1">Email</label>
                     <InputText @bind-Value="_model.Email" type="email"
-                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:border-indigo-500"
                                placeholder="you@example.com" />
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm text-gray-400 mb-1">Password</label>
                     <InputText @bind-Value="_model.Password" type="password"
-                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:border-indigo-500"
                                placeholder="••••••••" />
                 </div>
                 <div class="mb-6">
                     <label class="block text-sm text-gray-400 mb-1">Invite code <span class="text-gray-600">(required for new accounts)</span></label>
                     <InputText @bind-Value="_model.InviteCode"
-                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+                               class="w-full bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:border-indigo-500"
                                placeholder="Enter invite code" />
                 </div>
                 <button type="submit" disabled="@_loading"

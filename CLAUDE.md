@@ -25,9 +25,9 @@ In development, EF migrations run automatically on startup and a seed admin acco
 ## Architecture
 
 **Solution structure:**
-- `Nudge.API` — ASP.NET Core 8 Web API; also serves the Blazor WASM client as static files via `UseBlazorFrameworkFiles`
-- `Nudge.Client` — Blazor WebAssembly SPA (hosted model, not standalone)
-- `Nudge.Shared` — shared DTOs, EF Core entities/`NudgeDbContext`, enums, and extension methods used by both API and Client
+- `Nudge.API` — ASP.NET Core 8 Web API; serves the nudge-mobile web build as static files via `UseStaticFiles`/`MapFallbackToFile`
+- `nudge-mobile` — React Native / Expo app; built with `npx expo export --platform web` and served from `Nudge.API/wwwroot`
+- `Nudge.Shared` — shared DTOs, EF Core entities/`NudgeDbContext`, enums, and extension methods
 - `Nudge.API.Test` — xUnit tests
 
 **Database:** SQLite via EF Core (`nudge.db`). The connection string is configured through `AppSettings:ConnectionStrings:NudgeDb`. In production it's set via environment variable `AppSettings__ConnectionStrings__NudgeDb`.
@@ -38,6 +38,4 @@ In development, EF migrations run automatically on startup and a seed admin acco
 
 **SortOrder:** Tasks use gap-based ordering (multiples of 1000). On creation, `SortOrder = (priority + 1) * 1000`. `MoveAsync` and `ReorderAsync` rebuild the full sorted order by section (today → future days → backlog → done) and reassign sequential gaps.
 
-**Client HTTP:** All API calls go through a named `HttpClient` registered as `"WebAPI"` with `AuthTokenHandler` (injects the JWT). Components inject `IHttpClientFactory` and call `ClientFactory.CreateClient("WebAPI")`. The `CustomAuthStateProvider` manages auth state from local storage.
-
-**AppState** (`Nudge.Client/Services/AppState.cs`): Singleton that holds cross-component UI state (currently just `ShowAddTaskForm`). Components subscribe to `OnChange` for reactive updates.
+**Client HTTP (nudge-mobile):** All API calls go through `src/api/client.ts`, which reads the base URL from `EXPO_PUBLIC_API_URL` (defaults to `http://localhost:5000`). The JWT token is stored in `expo-secure-store` and attached via `Authorization: Bearer` header. Auth state is managed by `src/contexts/AuthContext.tsx`.

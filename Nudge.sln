@@ -5,8 +5,6 @@ VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nudge.API", "Nudge.API\Nudge.API.csproj", "{4A8D5CE3-7436-4B09-A24F-F4D9F8D4D979}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nudge.Client", "Nudge.Client\Nudge.Client.csproj", "{2904CF26-4B40-4980-AA3A-E072B00820F5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nudge.Shared", "Nudge.Shared\Nudge.Shared.csproj", "{65A1001D-BEF0-4752-9A01-1BB3F93718D9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nudge.API.Test", "Nudge.API.Test\Nudge.API.Test.csproj", "{F2B7C349-D21C-4972-8BCF-99490519237B}"
@@ -21,10 +19,6 @@ Global
 		{4A8D5CE3-7436-4B09-A24F-F4D9F8D4D979}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A8D5CE3-7436-4B09-A24F-F4D9F8D4D979}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A8D5CE3-7436-4B09-A24F-F4D9F8D4D979}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2904CF26-4B40-4980-AA3A-E072B00820F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2904CF26-4B40-4980-AA3A-E072B00820F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2904CF26-4B40-4980-AA3A-E072B00820F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2904CF26-4B40-4980-AA3A-E072B00820F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{65A1001D-BEF0-4752-9A01-1BB3F93718D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{65A1001D-BEF0-4752-9A01-1BB3F93718D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65A1001D-BEF0-4752-9A01-1BB3F93718D9}.Release|Any CPU.ActiveCfg = Release|Any CPU

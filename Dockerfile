@@ -1,3 +1,10 @@
+FROM node:20-alpine AS web-build
+WORKDIR /app
+COPY nudge-mobile/package*.json ./
+RUN npm ci
+COPY nudge-mobile/ .
+RUN npx expo export --platform web
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
@@ -6,7 +13,6 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Nudge.API/Nudge.API.csproj", "Nudge.API/"]
-COPY ["Nudge.Client/Nudge.Client.csproj", "Nudge.Client/"]
 COPY ["Nudge.Shared/Nudge.Shared.csproj", "Nudge.Shared/"]
 RUN dotnet restore "Nudge.API/Nudge.API.csproj"
 COPY . .
@@ -21,4 +27,5 @@ FROM base AS final
 WORKDIR /app
 ENV ASPNETCORE_ENVIRONMENT=Production
 COPY --from=publish /app/publish .
+COPY --from=web-build /app/dist ./wwwroot
 ENTRYPOINT ["dotnet", "Nudge.API.dll"]

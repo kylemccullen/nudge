@@ -7,3 +7,10 @@
 *.db-wal
 .env
 
+# Expo
+nudge-mobile/node_modules/
+nudge-mobile/dist/
+nudge-mobile/.expo/
+nudge-mobile/.env.local
+nudge-mobile/.env.native
+

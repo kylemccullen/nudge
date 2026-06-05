@@ -82,7 +82,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("MyOrigins");
 
-app.UseBlazorFrameworkFiles();
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthentication();

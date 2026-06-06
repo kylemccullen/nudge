@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authApi } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,7 +35,7 @@ export function RegisterScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
         <View style={styles.logoRow}>
           <Text style={styles.logo}>nudge</Text>
@@ -95,7 +95,7 @@ export function RegisterScreen({ navigation }: Props) {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-      </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
